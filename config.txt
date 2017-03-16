@@ -1,4 +1,23 @@
-in accept 136.159.0.0/16 22,80 
+in accept 136.159.5.5/32 22
+in accept 136.159.0.0/16 80,8080
+in accept * 443
+in accept 10.0.0.0/31 *
+in deny * 21
 in accept * * established
-in deny * *
-out accept * *
+out accept 137.159.0.0/8 *
+out deny 10.0.0.0/8 *
+out deny * 22
+out accept * *#comment test end
+#comment test start
+#testing invalid stuff below
+hue
+hue hue hue hue
+in hue hue hue
+in accept 11.11.11.11/16/16 hue
+in accept 11.11.11.11/wat hue
+in accept 11.11.11.11/9001 hue
+in accept 11.11.11.11.11/9 444444
+in accept 1234.11.11.11/9 444444
+in accept 11.11.11.11/9 444444
+in accept hue hue
+in accept * * establ!shed

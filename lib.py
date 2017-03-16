@@ -23,23 +23,24 @@ def decider(ruleList, line):
 	pkt_rule = ''
 	rule_num = 0
 	# loop through all rules, break if rule found
-	for rule in ruleList:
+	for count,rule in enumerate(ruleList):
 		rule_num += 1
 		# RULE: <directon> <action> <ip> <port> [flag]
+		if rule == "":
+			continue	#skip ruleLine if it's empty (most likely from a commented line)
 		rsplit = rule.split()
 		rule_direction = rsplit[0]
 		rule_action = rsplit[1]
 		rule_ip = rsplit[2]
 		rule_port = rsplit[3].split(',')
-
 		# if rule applies, display and break (direction -> ipaddr in range -> port)
-		if (pkt_direction == rule_direction) and (ip_address(pkt_ip) in ip_network(rule_ip) or rule_ip == '*') and (pkt_port in rule_port or rule_port == '*'):
+		if (pkt_direction == rule_direction) and (rule_ip == '*' or ip_address(pkt_ip) in ip_network(rule_ip, False)) and (pkt_port in rule_port or rsplit[3] == '*'):
 			# check if rule applies based on flag
-			if ((len(rsplit) == 5) and (rsplit[4] == 'established') and (pkt_estflag == '1')) or ((len(rsplit) == 4) and (pkt_estflag == '0')):
-					pkt_rule = "%d"%rule_num
-					returner = rule_action + "(" + pkt_rule + ") " + pkt_direction + " " + pkt_ip + " " + pkt_port + " " + pkt_estflag + "\n"
-					break
-	
+			if (((len(rsplit) == 4)) or (len(rsplit) == 5) and (rsplit[4] == 'established') and (pkt_estflag == '1')):
+				pkt_rule = "%d"%rule_num
+				returner = rule_action + "(" + pkt_rule + ") " + pkt_direction + " " + pkt_ip + " " + pkt_port + " " + pkt_estflag + "\n"
+				break
+
 	# if no rule found for packet
 	if pkt_rule == '':
 		returner = "drop() " + line
@@ -50,7 +51,7 @@ def decider(ruleList, line):
 # returns rule as string if valid
 def ruleLine(line, counter):
 	#<direction> <action> <ip> <port> [flag]
-	split = line.split()
+	split = line.split("#")[0].lower().split()
 	length = len(split)
 	returner = ""
 	test = 0
@@ -60,7 +61,6 @@ def ruleLine(line, counter):
 	if line[0] == '#':
 		return ""
 	elif length not in range(4,6):
-		print(split)
 		sys.stderr.write("Line " + count + ": Invalid rule, Ignoring Line\n")
 		return ""
 	else:
@@ -98,6 +98,11 @@ def ruleLine(line, counter):
 				if (len(ip4) != 4):
 					sys.stderr.write("Line " + count + ": Invalid IP Format, Ignoring Line\n")
 					return ""
+				
+				for num in ip4:
+					if int(num) not in range(0, 256):
+						sys.stderr.write("Line " + count + ": IP Value out of range, Ignoring Line\n")
+						return ""
 				returner = returner + split[2] + " "
 		#------------------------------
 		try:
