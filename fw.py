@@ -19,14 +19,21 @@ if __name__ == "__main__":
 
 	ruleList = []
 	#reading rules
-	sys.stderr.write("Rules parsed:" + "\n")
+	sys.stderr.write("-------------------------------\n")
+	sys.stderr.write("RULES:" + "\n")
 	with open(sys.argv[1], 'r') as f:
 		for count,line in enumerate(f):
 			# add rule to ruleList
 			ruleList.append(lib.ruleLine(line,count))
-			sys.stderr.write(ruleList[count] + "\n")
+			sys.stderr.write("(%d)"%(count+1) + " " + ruleList[count] + "\n")
+	
+	sys.stderr.write("-------------------------------\n")
+	sys.stderr.write("READING PACKETS:\n")
 
-	while True:
-		line = sys.stdin.buffer.read()
+
+	while line:
+		# read packets from stdin
+		line = sys.stdin.readline()
+		# action decided for packet
 		data = lib.decider(ruleList, line)
-		sys.stdout.buffer.write(data)
+		sys.stdout.write(data)

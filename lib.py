@@ -1,30 +1,51 @@
 import sys
 import io
+import ipaddress
+from ipaddress import ip_address, ip_network
 
 def decider(ruleList, line):
-	#IN: <direction> <ip> <port> <flag>
-	split = line.strip().lower().split(" ")
-	length = len(split)
+	#PACKET IN: <direction> <ip> <port> <flag>
+	split = line.split()
+	pkt_length = len(split)
 	returner = ""
 
-	if (len(split) not in range(3,5)):
+	if (pkt_length not in range(3,5)):
 		sys.stderr.write("Invalid Packet: " + line + ". Ignoring Packet\n")
 		return ""
-	action = split[0]
-	ip_pattern = split[1]
-	ports = split[2].split(",")
-	
-	return ""
+
+	# parse packet
+	pkt_direction = split[0]
+	pkt_ip = split[1]
+	pkt_port = split[2]
+
+	pkt_rule = ''
+	rule_num = 0
+	for rule in ruleList:
+		print(rule_num)
+		rule_num += 1
+		# RULE: <directon> <action> <ip> <port> [flag]
+		rule_arg = rule.split()
+
+		if (pkt_direction == rule_arg[1]) and (ip_address(pkt_ip) in ip_network(rule_arg[2])) and (pkt_port in rule_arg[3]) and (pkt_rule == ''):
+			pkt_rule = "%d"%(rule_num+1)
+			print('PACKET RULE APPLIED: ' + pkt_rule)
+
+	return returner
 	#OUT: <action>(<rule number>) <direction> <ip> <port> <flag>
 
+# returns rule as string if valid
 def ruleLine(line, counter):
 	#<direction> <action> <ip> <port> [flag]
-	split = line.split("#")[0].strip().lower().split(" ")
+	split = line.split()
 	length = len(split)
 	returner = ""
 	test = 0
 	count = str(counter)
-	if length not in range(4,6):
+
+	# if comment, ignore
+	if line[0] == '#':
+		return
+	elif length not in range(4,6):
 		print(split)
 		sys.stderr.write("Line " + count + ": Invalid rule, Ignoring Line\n")
 		return ""
@@ -39,13 +60,13 @@ def ruleLine(line, counter):
 		if action not in {"accept", "deny"}:
 			sys.stderr.write("Line " + count + ": Invalid action, Ignoring Line\n")
 			return ""
-		returner = action + " "
+		returner = returner + action + " "
 		#------------------------------
 		iprange = split[2].split("/")
 		if len(iprange) > 2:
 			sys.stderr.write("Line " + count + ": Invalid CIDR Notation, Ignoring Line\n")
 			return ""
-		elif (iprange[0] == "*"):
+		elif (split[2] == '*'):
 			returner = returner + "* "
 		elif len(iprange) == 2:
 			try:
@@ -63,39 +84,27 @@ def ruleLine(line, counter):
 				if (len(ip4) != 4):
 					sys.stderr.write("Line " + count + ": Invalid IP Format, Ignoring Line\n")
 					return ""
+				returner = returner + split[2] + " "
+		#------------------------------
+			try:
+				ports = split[3].split(",")
+				if (split[3] == "*"):
+					pass
 				else:
-					try:
-						i = 0
-						while (i < (iprangeint // 8)):
-							returner = returner + "{0:08b}".format(int(ip4[i]))
-							i = i+1
-						j = iprangeint % 8
-						if (j != 0):
-							returner = returner + "{0:08b}".format(int(ip4[i]))[:j] + " "
-						else:
-							returner = returner + " "
-					except:
-						sys.stderr.write(asdasd + "Line " + count + ": Accepts IPv4 format only2, Ignoring Line\n")
-						return ""
-		#------------------------------
-		try:
-			ports = split[3].split(",")
-			if (split[3] == "*"):
-				pass
-			else:
-				for port in ports:
-					test = int(port)
-					if test not in range(0, 65536):
-						sys.stderr.write("Line " + count + ": " + str(test) + " is not a valid port number, Ignoring Line\n")
-						return ""
-		except:
-			sys.stderr.write("Line " + count + ": Supplied port not a number, Ignoring Line\n")
-			return ""
-		returner = returner + split[3] + " "
-		#------------------------------
-		if (length == 5):
-			if (split[4] != "established"):
-				sys.stderr.write("Line " + count + ": Invalid Flag, Ignoring Line\n")
+					for port in ports:
+						test = int(port)
+						if test not in range(0, 65536):
+							sys.stderr.write("Line " + count + ": " + str(test) + " is not a valid port number, Ignoring Line\n")
+							return ""
+			except:
+				sys.stderr.write("Line " + count + ": Supplied port not a number, Ignoring Line\n")
 				return ""
-			returner = returner + split[4]
-	return returner
+			returner = returner + split[3] + " "
+		#------------------------------
+			if (length == 5):
+				if (split[4] != "established"):
+					sys.stderr.write("Line " + count + ": Invalid Flag, Ignoring Line\n")
+					return ""
+				returner = returner + split[4]
+
+		return returner
