@@ -3,6 +3,7 @@ import io
 import ipaddress
 from ipaddress import ip_address, ip_network
 
+
 def decider(ruleList, line):
 	#PACKET IN: <direction> <ip> <port> <flag>
 	split = line.split()
@@ -17,18 +18,31 @@ def decider(ruleList, line):
 	pkt_direction = split[0]
 	pkt_ip = split[1]
 	pkt_port = split[2]
+	pkt_estflag = split[3]
 
 	pkt_rule = ''
 	rule_num = 0
+	# loop through all rules, break if rule found
 	for rule in ruleList:
-		print(rule_num)
 		rule_num += 1
 		# RULE: <directon> <action> <ip> <port> [flag]
-		rule_arg = rule.split()
+		rsplit = rule.split()
+		rule_direction = rsplit[0]
+		rule_action = rsplit[1]
+		rule_ip = rsplit[2]
+		rule_port = rsplit[3].split(',')
 
-		if (pkt_direction == rule_arg[1]) and (ip_address(pkt_ip) in ip_network(rule_arg[2])) and (pkt_port in rule_arg[3]) and (pkt_rule == ''):
-			pkt_rule = "%d"%(rule_num+1)
-			print('PACKET RULE APPLIED: ' + pkt_rule)
+		# if rule applies, display and break (direction -> ipaddr in range -> port)
+		if (pkt_direction == rule_direction) and (ip_address(pkt_ip) in ip_network(rule_ip) or rule_ip == '*') and (pkt_port in rule_port or rule_port == '*'):
+			# check if rule applies based on flag
+			if ((len(rsplit) == 5) and (rsplit[4] == 'established') and (pkt_estflag == '1')) or ((len(rsplit) == 4) and (pkt_estflag == '0')):
+					pkt_rule = "%d"%rule_num
+					returner = rule_action + "(" + pkt_rule + ") " + pkt_direction + " " + pkt_ip + " " + pkt_port + " " + pkt_estflag + "\n"
+					break
+	
+	# if no rule found for packet
+	if pkt_rule == '':
+		returner = "drop() " + line
 
 	return returner
 	#OUT: <action>(<rule number>) <direction> <ip> <port> <flag>

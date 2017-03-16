@@ -31,9 +31,7 @@ if __name__ == "__main__":
 	sys.stderr.write("READING PACKETS:\n")
 
 
-	while line:
-		# read packets from stdin
-		line = sys.stdin.readline()
+	for line in sys.stdin:
 		# action decided for packet
 		data = lib.decider(ruleList, line)
 		sys.stdout.write(data)

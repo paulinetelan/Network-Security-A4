@@ -1,1 +1,4 @@
 in accept 136.159.0.0/16 22,80 
+in accept * * established
+in deny * *
+out accept * *
