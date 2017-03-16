@@ -58,7 +58,7 @@ def ruleLine(line, counter):
 
 	# if comment, ignore
 	if line[0] == '#':
-		return
+		return ""
 	elif length not in range(4,6):
 		print(split)
 		sys.stderr.write("Line " + count + ": Invalid rule, Ignoring Line\n")
@@ -100,25 +100,25 @@ def ruleLine(line, counter):
 					return ""
 				returner = returner + split[2] + " "
 		#------------------------------
-			try:
-				ports = split[3].split(",")
-				if (split[3] == "*"):
-					pass
-				else:
-					for port in ports:
-						test = int(port)
-						if test not in range(0, 65536):
-							sys.stderr.write("Line " + count + ": " + str(test) + " is not a valid port number, Ignoring Line\n")
-							return ""
-			except:
-				sys.stderr.write("Line " + count + ": Supplied port not a number, Ignoring Line\n")
-				return ""
-			returner = returner + split[3] + " "
+		try:
+			ports = split[3].split(",")
+			if (split[3] == "*"):
+				pass
+			else:
+				for port in ports:
+					test = int(port)
+					if test not in range(0, 65536):
+						sys.stderr.write("Line " + count + ": " + str(test) + " is not a valid port number, Ignoring Line\n")
+						return ""
+		except:
+			sys.stderr.write("Line " + count + ": Supplied port not a number, Ignoring Line\n")
+			return ""
+		returner = returner + split[3] + " "
 		#------------------------------
-			if (length == 5):
-				if (split[4] != "established"):
-					sys.stderr.write("Line " + count + ": Invalid Flag, Ignoring Line\n")
-					return ""
-				returner = returner + split[4]
+		if (length == 5):
+			if (split[4] != "established"):
+				sys.stderr.write("Line " + count + ": Invalid Flag, Ignoring Line\n")
+				return ""
+			returner = returner + split[4]
 
-		return returner
+	return returner
