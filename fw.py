@@ -23,15 +23,19 @@ if __name__ == "__main__":
 	sys.stderr.write("RULES:" + "\n")
 	with open(sys.argv[1], 'r') as f:
 		for count,line in enumerate(f):
+			rule = lib.ruleLine(line, count)
 			# add rule to ruleList
-			ruleList.append(lib.ruleLine(line,count))
-			sys.stderr.write("(%d)"%(count+1) + " " + ruleList[count] + "\n")
+			if rule != '':
+				ruleList.append(rule)
+				sys.stderr.write("(%d)"%(count+1) + " " + ruleList[count] + "\n")
 	
 	sys.stderr.write("-------------------------------\n")
 	sys.stderr.write("READING PACKETS:\n")
-
 
 	for line in sys.stdin:
 		# action decided for packet
 		data = lib.decider(ruleList, line)
 		sys.stdout.write(data)
+
+	# add new line after last line of file
+	sys.stdout.write("\n")

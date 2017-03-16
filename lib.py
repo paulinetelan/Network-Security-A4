@@ -23,11 +23,9 @@ def decider(ruleList, line):
 	pkt_rule = ''
 	rule_num = 0
 	# loop through all rules, break if rule found
-	for count,rule in enumerate(ruleList):
+	for rule in ruleList:
 		rule_num += 1
 		# RULE: <directon> <action> <ip> <port> [flag]
-		if rule == "":
-			continue	#skip ruleLine if it's empty (most likely from a commented line)
 		rsplit = rule.split()
 		rule_direction = rsplit[0]
 		rule_action = rsplit[1]
