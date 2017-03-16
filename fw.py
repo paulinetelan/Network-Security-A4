@@ -36,6 +36,3 @@ if __name__ == "__main__":
 		# action decided for packet
 		data = lib.decider(ruleList, line)
 		sys.stdout.write(data)
-
-	# add new line after last line of file
-	sys.stdout.write("\n")
