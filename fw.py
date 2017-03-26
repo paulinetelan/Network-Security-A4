@@ -23,14 +23,13 @@ if __name__ == "__main__":
 	sys.stderr.write("RULES:" + "\n")
 	with open(sys.argv[1], 'r') as f:
 		for count,line in enumerate(f):
-			rule = lib.ruleLine(line, count)
 			# add rule to ruleList
-			if rule != '':
-				ruleList.append(rule)
-				sys.stderr.write("(%d)"%(count+1) + " " + ruleList[count] + "\n")
+			ruleList.append(lib.ruleLine(line,count))
+			sys.stderr.write("(%d)"%(count+1) + " " + ruleList[count] + "\n")
 	
 	sys.stderr.write("-------------------------------\n")
 	sys.stderr.write("READING PACKETS:\n")
+
 
 	for line in sys.stdin:
 		# action decided for packet

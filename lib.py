@@ -23,21 +23,28 @@ def decider(ruleList, line):
 	pkt_rule = ''
 	rule_num = 0
 	# loop through all rules, break if rule found
-	for rule in ruleList:
+	for count,rule in enumerate(ruleList):
 		rule_num += 1
 		# RULE: <directon> <action> <ip> <port> [flag]
+		if rule == "":
+			continue	#skip ruleLine if it's empty (most likely from a commented line)
 		rsplit = rule.split()
 		rule_direction = rsplit[0]
 		rule_action = rsplit[1]
 		rule_ip = rsplit[2]
 		rule_port = rsplit[3].split(',')
 		# if rule applies, display and break (direction -> ipaddr in range -> port)
-		if (pkt_direction == rule_direction) and (rule_ip == '*' or ip_address(pkt_ip) in ip_network(rule_ip, False)) and (pkt_port in rule_port or rsplit[3] == '*'):
-			# check if rule applies based on flag
-			if (((len(rsplit) == 4)) or (len(rsplit) == 5) and (rsplit[4] == 'established') and (pkt_estflag == '1')):
-				pkt_rule = "%d"%rule_num
-				returner = rule_action + "(" + pkt_rule + ") " + pkt_direction + " " + pkt_ip + " " + pkt_port + " " + pkt_estflag + "\n"
-				break
+		try:
+			if (pkt_direction == rule_direction) and (rule_ip == '*' or ip_address(pkt_ip) in ip_network(rule_ip, False)) and (pkt_port in rule_port or rsplit[3] == '*'):
+				# check if rule applies based on flag
+				if ((len(rsplit) == 5) and (rsplit[4] == 'established') and (pkt_estflag == '1') or ((len(rsplit) == 4))):
+					pkt_rule = "%d"%rule_num
+					returner = rule_action + "(" + pkt_rule + ") " + pkt_direction + " " + pkt_ip + " " + pkt_port + " " + pkt_estflag + "\n"
+					break
+		except:
+			#sys.stderr.write("Wrong Packet format\n")
+			returner = "drop() " + line
+			
 
 	# if no rule found for packet
 	if pkt_rule == '':
@@ -125,3 +132,4 @@ def ruleLine(line, counter):
 			returner = returner + split[4]
 
 	return returner
+
