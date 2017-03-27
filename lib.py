@@ -55,7 +55,7 @@ def ruleLine(line, counter):
 	length = len(split)
 	returner = ""
 	test = 0
-	count = str(counter)
+	count = str(counter+1)
 
 	# if comment, ignore
 	if line[0] == '#':
